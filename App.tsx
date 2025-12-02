@@ -17,13 +17,14 @@ import {
   ChevronRight,
   X as CloseIcon,
   Plus,
-  Trash2
+  Trash2,
+  ZoomIn
 } from 'lucide-react';
 
 /**
  * =================================================================================
  * 初始内容配置 (INITIAL CONTENT)
- * 数据结构已更新支持多图系列
+ * 数据结构已更新支持 Hero 独立图片和缩放
  * =================================================================================
  */
 const INITIAL_CONTENT = {
@@ -32,6 +33,24 @@ const INITIAL_CONTENT = {
     roles: ["Artist", "Researcher", "Educator"],
     tagline: "Emotion is deeply rooted in the pulse of the times and history will forge its eternity.",
     intro: "Exploring the tension between fragility and resilience through ceramics, painting, and cross-cultural research.",
+    // New independent images for the Hero section with scale properties
+    images: [
+      { 
+        url: "https://images.unsplash.com/photo-1614730341194-75c60740a270?q=80&w=2774&auto=format&fit=crop", 
+        alt: "Hero Image 1", 
+        scale: 1.2 
+      },
+      { 
+        url: "https://images.unsplash.com/photo-1629196914375-f7e48f477b6d?q=80&w=2656&auto=format&fit=crop", 
+        alt: "Hero Image 2", 
+        scale: 1.0 
+      },
+      { 
+        url: "https://images.unsplash.com/photo-1549887552-93f8efb0818e?q=80&w=2670&auto=format&fit=crop", 
+        alt: "Hero Image 3", 
+        scale: 1.0 
+      }
+    ]
   },
   about: {
     bio: "Born in 1996 in Nanchang, China, Zixiong Nie (Neo) is a multidisciplinary artist and educator. He currently serves as a Lecturer at the Jingdezhen Vocational University of Art. With a practice deeply rooted in the historic porcelain capital of Jingdezhen, he founded the personal art brand 'ZISION' and the ceramic design brand 'From Clay'.",
@@ -238,6 +257,7 @@ const EditableText = ({
   );
 };
 
+// Generic Editable Image (for Standard Squares/Rectangles)
 const EditableImage = ({
   path,
   alt,
@@ -301,6 +321,95 @@ const EditableImage = ({
       {!isEditing && onClick && (
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors z-20 pointer-events-none flex items-center justify-center opacity-0 group-hover:opacity-100">
            <Maximize2 className="text-white drop-shadow-md" size={32} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Specialized Editable Image for Hero Section (Supports Scaling)
+const EditableHeroImage = ({
+  imageIndex,
+  className = ""
+}: {
+  imageIndex: number,
+  className?: string,
+}) => {
+  const { isEditing, updateContent, content } = React.useContext(AppContext);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const basePath = ['hero', 'images', imageIndex];
+  const src = getValueFromPath(content, [...basePath, 'url']);
+  const scale = getValueFromPath(content, [...basePath, 'scale']) || 1.0;
+  const alt = getValueFromPath(content, [...basePath, 'alt']);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Image is too large for local storage. Please use an image under 2MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateContent([...basePath, 'url'], reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleScaleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const newScale = parseFloat(e.target.value);
+    updateContent([...basePath, 'scale'], newScale);
+  }
+
+  return (
+    <div className={`relative w-full h-full overflow-hidden ${className}`}>
+      {/* The Image Itself with Scale Transform */}
+      <img 
+        src={src} 
+        alt={alt} 
+        className="w-full h-full object-cover transition-transform duration-100" 
+        style={{ transform: `scale(${scale})` }}
+      />
+      
+      {/* Edit Overlay */}
+      {isEditing && (
+        <div className="absolute inset-0 bg-black/60 z-30 flex flex-col items-center justify-center border-4 border-yellow-400 p-2">
+          
+          {/* Upload Button */}
+          <div 
+             className="flex flex-col items-center cursor-pointer hover:text-yellow-300 mb-3"
+             onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+          >
+            <Upload className="text-yellow-400 mb-1" size={24} />
+            <span className="text-white font-bold tracking-widest uppercase text-[10px]">Replace</span>
+          </div>
+
+          {/* Scale Control */}
+          <div className="w-full px-2 flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+             <div className="flex items-center gap-1 text-yellow-400 mb-1">
+               <ZoomIn size={12} />
+               <span className="text-[10px] uppercase font-bold">Zoom</span>
+             </div>
+             <input 
+               type="range" 
+               min="0.5" 
+               max="3.0" 
+               step="0.1" 
+               value={scale} 
+               onChange={handleScaleChange}
+               className="w-full h-1 bg-stone-600 rounded-lg appearance-none cursor-pointer accent-yellow-400"
+             />
+          </div>
+
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            className="hidden" 
+            accept="image/*" 
+            onChange={handleFileChange} 
+          />
         </div>
       )}
     </div>
@@ -634,38 +743,26 @@ const Hero = () => {
           </FadeIn>
         </div>
 
-        {/* Right Content - Diamond Grid */}
+        {/* Right Content - Diamond Grid - INDEPENDENT HERO IMAGES */}
         <div className="relative hidden md:block h-[600px] w-full pointer-events-none md:pointer-events-auto">
             {/* Image 1 - Hero Top Right */}
             <div className="absolute top-10 right-10 w-64 h-64 overflow-hidden border-4 border-white shadow-2xl rotate-45 z-20 hover:scale-105 transition-transform duration-700">
                <div className="w-full h-full -rotate-45 scale-125">
-                 <EditableImage 
-                    path={['artSeries', 0, 'images', 0, 'url']} 
-                    alt="Art 1"
-                    className="w-full h-full"
-                  />
+                  <EditableHeroImage imageIndex={0} />
                </div>
             </div>
             
             {/* Image 2 - Hero Center */}
             <div className="absolute top-48 right-48 w-56 h-56 overflow-hidden border-4 border-white shadow-2xl rotate-45 z-10 hover:scale-105 transition-transform duration-700 grayscale hover:grayscale-0">
                <div className="w-full h-full -rotate-45 scale-125">
-                 <EditableImage 
-                    path={['artSeries', 1, 'images', 0, 'url']} 
-                    alt="Art 2"
-                    className="w-full h-full"
-                  />
+                  <EditableHeroImage imageIndex={1} />
                </div>
             </div>
 
             {/* Image 3 - Hero Bottom */}
             <div className="absolute bottom-10 right-20 w-48 h-48 overflow-hidden border-4 border-white shadow-2xl rotate-45 z-30 hover:scale-105 transition-transform duration-700">
                <div className="w-full h-full -rotate-45 scale-125">
-                 <EditableImage 
-                    path={['artSeries', 2, 'images', 0, 'url']} 
-                    alt="Art 3"
-                    className="w-full h-full"
-                  />
+                  <EditableHeroImage imageIndex={2} />
                </div>
             </div>
         </div>
@@ -1075,8 +1172,8 @@ const Footer = () => {
 
 export default function App() {
   // 1. Initialize State with LocalStorage check
-  // Key bumped to v2 to force data structure update for new design collection images array
-  const STORAGE_KEY = 'neo_portfolio_content_v2';
+  // Key bumped to v3 to force data structure update for Hero Images independence
+  const STORAGE_KEY = 'neo_portfolio_content_v3';
   
   const [content, setContent] = useState(() => {
     try {
