@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+
+import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { 
   Menu, 
   X, 
@@ -6,21 +7,21 @@ import {
   BookOpen, 
   Award, 
   Briefcase, 
-  Mail 
+  Mail,
+  Edit2,
+  Upload,
+  Check,
+  RotateCcw
 } from 'lucide-react';
 
 /**
  * =================================================================================
- * CONTENT CONFIGURATION - EDIT THIS SECTION TO UPDATE YOUR WEBSITE
+ * INITIAL CONTENT CONFIGURATION
+ * This serves as the default state. Changes made via the UI will override this
+ * temporarily (until refresh).
  * =================================================================================
- * 
- * Instructions:
- * 1. Text: Replace the text inside the quotes "".
- * 2. Images: Replace the 'url' with links to your own images.
- * 3. Arrays: To add more items (like education or art series), copy an object {} 
- *    inside the square brackets [] and paste it.
  */
-const CONTENT = {
+const INITIAL_CONTENT = {
   hero: {
     name: "Profile of Zixiong Nie",
     roles: ["Artist", "Researcher", "Educator"],
@@ -66,7 +67,6 @@ const CONTENT = {
       title: "Born in Thorns",
       description: "This series addresses spiritual struggle and transcendence. The thorn symbolizes nature's resistance, entwining fragile porcelain like nature's struggle amid industrial onslaught. It becomes an emotionally charged contradiction: through this tension, the porcelain's life continues to unfold.",
       images: [
-        // TODO: Replace these Unsplash URLs with your own image links
         { url: "https://images.unsplash.com/photo-1614730341194-75c60740a270?q=80&w=2774&auto=format&fit=crop", alt: "Folding screen with thorn motifs, ceramic and metal" },
         { url: "https://images.unsplash.com/photo-1629196914375-f7e48f477b6d?q=80&w=2656&auto=format&fit=crop", alt: "Close up of thorn texture on ceramic tile" }
       ]
@@ -136,7 +136,119 @@ const CONTENT = {
 
 /**
  * =================================================================================
- * COMPONENTS
+ * EDITING HELPER COMPONENTS
+ * =================================================================================
+ */
+
+// Context for edit mode
+const EditContext = React.createContext<{
+  isEditing: boolean;
+  updateContent: (path: (string | number)[], value: any) => void;
+}>({
+  isEditing: false,
+  updateContent: () => {},
+});
+
+const EditableText = ({ 
+  path, 
+  value, 
+  multiline = false, 
+  className = "",
+  as: Component = "span" 
+}: { 
+  path: (string | number)[], 
+  value: string, 
+  multiline?: boolean, 
+  className?: string,
+  as?: any
+}) => {
+  const { isEditing, updateContent } = React.useContext(EditContext);
+
+  if (!isEditing) {
+    // If it's a "p" tag or similar block level in non-edit mode, ensure it renders correctly
+    return <Component className={className}>{value}</Component>;
+  }
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    updateContent(path, e.target.value);
+  };
+
+  const inputStyles = `bg-brand-accent/30 border-b-2 border-brand-light focus:outline-none focus:bg-white text-stone-900 w-full rounded px-1 transition-colors ${className}`;
+
+  if (multiline) {
+    return (
+      <textarea 
+        className={inputStyles}
+        value={value}
+        onChange={handleChange}
+        rows={4}
+      />
+    );
+  }
+
+  return (
+    <input 
+      type="text" 
+      className={inputStyles}
+      value={value}
+      onChange={handleChange}
+    />
+  );
+};
+
+const EditableImage = ({
+  path,
+  src,
+  alt,
+  className = ""
+}: {
+  path: (string | number)[],
+  src: string,
+  alt: string,
+  className?: string
+}) => {
+  const { isEditing, updateContent } = React.useContext(EditContext);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateContent(path, reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className={`relative group ${className}`}>
+      <img src={src} alt={alt} className="w-full h-full object-cover" />
+      
+      {isEditing && (
+        <div 
+          className="absolute inset-0 bg-brand-dark/60 flex flex-col items-center justify-center cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Upload className="text-white mb-2" size={32} />
+          <span className="text-white font-bold tracking-widest uppercase text-xs">Change Image</span>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            className="hidden" 
+            accept="image/*" 
+            onChange={handleFileChange} 
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+/**
+ * =================================================================================
+ * UI COMPONENTS
  * =================================================================================
  */
 
@@ -185,6 +297,7 @@ const FadeIn = ({ children, delay = 0 }: { children?: React.ReactNode, delay?: n
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { isEditing } = React.useContext(EditContext);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -201,7 +314,7 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-sm shadow-md py-3' : 'bg-transparent py-6'}`}>
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled || isEditing ? 'bg-white/95 backdrop-blur-sm shadow-md py-3' : 'bg-transparent py-6'}`}>
       <div className="container mx-auto px-6 flex justify-between items-center">
         <a href="#home" className={`font-serif text-xl tracking-widest font-bold ${scrolled ? 'text-brand-dark' : 'text-brand-dark'}`}>
           ZIXIONG NIE
@@ -213,7 +326,7 @@ const Navigation = () => {
             <a 
               key={link.name} 
               href={link.href} 
-              className={`text-xs uppercase tracking-[0.2em] font-medium hover:text-brand-light transition-colors ${scrolled ? 'text-stone-800' : 'text-stone-900'}`}
+              className={`text-xs uppercase tracking-[0.2em] font-medium hover:text-brand-light transition-colors ${scrolled || isEditing ? 'text-stone-800' : 'text-stone-900'}`}
             >
               {link.name}
             </a>
@@ -241,25 +354,24 @@ const Navigation = () => {
           ))}
         </div>
       )}
+      
+      {/* Edit Mode Indicator */}
+      {isEditing && (
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 bg-yellow-400 text-yellow-900 px-4 py-1 text-xs font-bold uppercase tracking-widest rounded-b-lg shadow-sm">
+          Edit Mode Active
+        </div>
+      )}
     </nav>
   );
 };
 
-const Hero = () => {
+const Hero = ({ content }: { content: typeof INITIAL_CONTENT }) => {
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#F5F5F4]">
       
-      {/* 
-        Aesthetic: Diagonal Division (Deep Burgundy & Light Grey)
-      */}
-      
-      {/* Left Bottom Burgundy Triangle */}
+      {/* Aesthetics */}
       <div className="absolute bottom-0 left-0 w-[50vw] h-[50vh] bg-brand-dark transform -translate-x-1/4 translate-y-1/4 rotate-45 z-0"></div>
-      
-      {/* Right Top Grey Block with Clip Path */}
       <div className="absolute top-0 right-0 w-[70vw] h-[100vh] bg-[#E7E5E4] clip-path-polygon z-0"></div>
-
-      {/* Thin Decorative Line - Red */}
       <div className="absolute top-[30%] right-[40%] w-0.5 h-48 bg-brand-light rotate-45 z-10 hidden md:block"></div>
       
       <div className="container mx-auto px-6 relative z-10 grid md:grid-cols-2 gap-12 items-center h-full pt-20">
@@ -268,24 +380,29 @@ const Hero = () => {
         <div className="text-left relative">
           <FadeIn delay={200}>
             <h1 className="text-6xl md:text-8xl font-serif text-brand-dark leading-none italic drop-shadow-sm">
-              Profile of<br/>
-              <span className="not-italic text-stone-900">Zixiong Nie</span>
+              <span className="block text-4xl md:text-6xl mb-2 not-italic">Profile of</span>
+              <EditableText path={['hero', 'name']} value={content.hero.name.replace("Profile of ", "")} />
             </h1>
           </FadeIn>
           
           <FadeIn delay={400}>
             <div className="mt-12 max-w-lg">
-              <p className="font-playfair italic text-stone-600 text-lg md:text-xl border-l-2 border-brand-dark pl-6 py-2">
-                "{CONTENT.hero.tagline}"
-              </p>
+              <div className="font-playfair italic text-stone-600 text-lg md:text-xl border-l-2 border-brand-dark pl-6 py-2">
+                <EditableText 
+                  path={['hero', 'tagline']} 
+                  value={content.hero.tagline} 
+                  multiline 
+                  as="p"
+                />
+              </div>
             </div>
           </FadeIn>
 
           <FadeIn delay={600}>
              <div className="mt-8 flex gap-4">
-               {CONTENT.hero.roles.map((role, idx) => (
+               {content.hero.roles.map((role, idx) => (
                  <span key={idx} className="text-xs font-bold tracking-widest uppercase text-brand-dark border border-brand-dark/20 bg-white/50 px-3 py-1 rounded-sm">
-                   {role}
+                   <EditableText path={['hero', 'roles', idx]} value={role} />
                  </span>
                ))}
              </div>
@@ -296,17 +413,38 @@ const Hero = () => {
         <div className="relative hidden md:block h-[600px] w-full">
             {/* Image 1 */}
             <div className="absolute top-10 right-10 w-64 h-64 overflow-hidden border-4 border-white shadow-2xl rotate-45 z-20 hover:scale-105 transition-transform duration-700">
-               <img src={CONTENT.artSeries[0].images[0].url} className="w-full h-full object-cover -rotate-45 scale-125" alt="Art 1" />
+               <div className="w-full h-full -rotate-45 scale-125">
+                 <EditableImage 
+                    path={['artSeries', 0, 'images', 0, 'url']} 
+                    src={content.artSeries[0].images[0].url} 
+                    alt="Art 1"
+                    className="w-full h-full"
+                  />
+               </div>
             </div>
             
             {/* Image 2 */}
             <div className="absolute top-48 right-48 w-56 h-56 overflow-hidden border-4 border-white shadow-2xl rotate-45 z-10 hover:scale-105 transition-transform duration-700 grayscale hover:grayscale-0">
-               <img src={CONTENT.artSeries[1].images[0].url} className="w-full h-full object-cover -rotate-45 scale-125" alt="Art 2" />
+               <div className="w-full h-full -rotate-45 scale-125">
+                 <EditableImage 
+                    path={['artSeries', 1, 'images', 0, 'url']} 
+                    src={content.artSeries[1].images[0].url} 
+                    alt="Art 2"
+                    className="w-full h-full"
+                  />
+               </div>
             </div>
 
             {/* Image 3 */}
             <div className="absolute bottom-10 right-20 w-48 h-48 overflow-hidden border-4 border-white shadow-2xl rotate-45 z-30 hover:scale-105 transition-transform duration-700">
-               <img src={CONTENT.artSeries[2].images[0].url} className="w-full h-full object-cover -rotate-45 scale-125" alt="Art 3" />
+               <div className="w-full h-full -rotate-45 scale-125">
+                 <EditableImage 
+                    path={['artSeries', 2, 'images', 0, 'url']} 
+                    src={content.artSeries[2].images[0].url} 
+                    alt="Art 3"
+                    className="w-full h-full"
+                  />
+               </div>
             </div>
         </div>
       </div>
@@ -318,7 +456,7 @@ const Hero = () => {
   );
 };
 
-const About = () => {
+const About = ({ content }: { content: typeof INITIAL_CONTENT }) => {
   return (
     <section id="about" className="py-24 bg-white relative">
       <div className="container mx-auto px-6">
@@ -327,14 +465,16 @@ const About = () => {
           <div className="md:col-span-7">
             <FadeIn>
               <SectionTitle>About The Artist</SectionTitle>
-              <div className="prose prose-stone prose-lg text-stone-600">
-                <p className="leading-loose mb-8 text-lg">{CONTENT.about.bio}</p>
+              <div className="prose prose-stone prose-lg text-stone-600 w-full">
+                <div className="leading-loose mb-8 text-lg">
+                  <EditableText path={['about', 'bio']} value={content.about.bio} multiline as="p" />
+                </div>
                 
                 <div className="bg-stone-50 p-8 border-l-4 border-brand-dark my-8 shadow-sm">
                   <h3 className="font-serif text-xl text-brand-dark mb-4">Artistic Statement</h3>
-                  <p className="italic font-playfair text-stone-700">
-                    {CONTENT.about.statement}
-                  </p>
+                  <div className="italic font-playfair text-stone-700">
+                    <EditableText path={['about', 'statement']} value={content.about.statement} multiline as="p" />
+                  </div>
                 </div>
               </div>
             </FadeIn>
@@ -347,12 +487,18 @@ const About = () => {
                   <Award className="text-brand-dark" size={18} /> Education
                 </h3>
                 <div className="space-y-8 border-l border-stone-200 ml-2 pl-8 py-2">
-                  {CONTENT.about.education.map((edu, idx) => (
+                  {content.about.education.map((edu, idx) => (
                     <div key={idx} className="relative">
                       <span className="absolute -left-[37px] top-1.5 w-3 h-3 rounded-full border-2 border-brand-dark bg-white"></span>
-                      <span className="block text-brand-dark font-bold text-sm mb-1">{edu.year}</span>
-                      <h4 className="text-lg font-serif text-stone-900 leading-tight">{edu.degree}</h4>
-                      <span className="text-stone-500 text-sm">{edu.institution}</span>
+                      <span className="block text-brand-dark font-bold text-sm mb-1">
+                        <EditableText path={['about', 'education', idx, 'year']} value={edu.year} />
+                      </span>
+                      <h4 className="text-lg font-serif text-stone-900 leading-tight">
+                        <EditableText path={['about', 'education', idx, 'degree']} value={edu.degree} />
+                      </h4>
+                      <span className="text-stone-500 text-sm">
+                        <EditableText path={['about', 'education', idx, 'institution']} value={edu.institution} />
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -365,12 +511,18 @@ const About = () => {
                   <Briefcase className="text-brand-dark" size={18} /> Experience
                 </h3>
                 <div className="space-y-8 border-l border-stone-200 ml-2 pl-8 py-2">
-                  {CONTENT.about.experience.map((exp, idx) => (
+                  {content.about.experience.map((exp, idx) => (
                     <div key={idx} className="relative">
                       <span className="absolute -left-[37px] top-1.5 w-3 h-3 rounded-full border-2 border-brand-dark bg-white"></span>
-                      <span className="block text-brand-dark font-bold text-sm mb-1">{exp.year}</span>
-                      <h4 className="text-lg font-serif text-stone-900 leading-tight">{exp.role}</h4>
-                      <span className="text-stone-500 text-sm">{exp.place}</span>
+                      <span className="block text-brand-dark font-bold text-sm mb-1">
+                        <EditableText path={['about', 'experience', idx, 'year']} value={exp.year} />
+                      </span>
+                      <h4 className="text-lg font-serif text-stone-900 leading-tight">
+                        <EditableText path={['about', 'experience', idx, 'role']} value={exp.role} />
+                      </h4>
+                      <span className="text-stone-500 text-sm">
+                        <EditableText path={['about', 'experience', idx, 'place']} value={exp.place} />
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -384,7 +536,7 @@ const About = () => {
   );
 };
 
-const ArtSeriesCard = ({ series, index }: { series: typeof CONTENT.artSeries[0], index: number }) => {
+const ArtSeriesCard = ({ series, index }: { series: any, index: number }) => {
   const isEven = index % 2 === 0;
   
   return (
@@ -394,18 +546,20 @@ const ArtSeriesCard = ({ series, index }: { series: typeof CONTENT.artSeries[0],
       <div className="w-full lg:w-3/5 relative">
         <FadeIn>
            <div className="w-full aspect-[4/3] bg-stone-200 relative overflow-hidden shadow-2xl border-4 border-white">
-             <div className="absolute inset-0 bg-brand-dark/0 group-hover:bg-brand-dark/10 transition-colors duration-500 z-10"></div>
-             <img 
-               src={series.images[0].url} 
-               alt={series.images[0].alt}
-               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+             <div className="absolute inset-0 bg-brand-dark/0 group-hover:bg-brand-dark/10 transition-colors duration-500 z-10 pointer-events-none"></div>
+             <EditableImage 
+                path={['artSeries', index, 'images', 0, 'url']}
+                src={series.images[0].url} 
+                alt={series.images[0].alt}
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
              />
            </div>
            
            {/* Decorative overlapping image */}
            {series.images[1] && (
              <div className={`hidden md:block w-1/2 absolute -bottom-12 ${isEven ? '-right-12' : '-left-12'} aspect-square border-8 border-stone-50 shadow-xl z-20`}>
-                <img 
+                <EditableImage 
+                  path={['artSeries', index, 'images', 1, 'url']}
                   src={series.images[1].url} 
                   alt={series.images[1].alt}
                   className="w-full h-full object-cover"
@@ -424,19 +578,19 @@ const ArtSeriesCard = ({ series, index }: { series: typeof CONTENT.artSeries[0],
       <div className="w-full lg:w-2/5">
         <FadeIn delay={200}>
           <h3 className="text-4xl md:text-5xl font-serif text-brand-dark mb-8 leading-tight">
-            {series.title}
+            <EditableText path={['artSeries', index, 'title']} value={series.title} />
           </h3>
           <div className="w-12 h-1 bg-stone-300 mb-8"></div>
-          <p className="text-stone-600 leading-relaxed mb-8 text-lg font-light">
-            {series.description}
-          </p>
+          <div className="text-stone-600 leading-relaxed mb-8 text-lg font-light">
+            <EditableText path={['artSeries', index, 'description']} value={series.description} multiline as="p" />
+          </div>
         </FadeIn>
       </div>
     </div>
   );
 };
 
-const ArtPortfolio = () => {
+const ArtPortfolio = ({ content }: { content: typeof INITIAL_CONTENT }) => {
   return (
     <section id="art" className="py-32 bg-stone-100">
       <div className="container mx-auto px-6">
@@ -445,7 +599,7 @@ const ArtPortfolio = () => {
         </div>
 
         <div className="max-w-7xl mx-auto">
-          {CONTENT.artSeries.map((series, index) => (
+          {content.artSeries.map((series, index) => (
             <ArtSeriesCard key={series.id} series={series} index={index} />
           ))}
         </div>
@@ -454,7 +608,7 @@ const ArtPortfolio = () => {
   );
 };
 
-const DesignSection = () => {
+const DesignSection = ({ content }: { content: typeof INITIAL_CONTENT }) => {
   return (
     <section id="design" className="py-24 bg-brand-dark text-white overflow-hidden relative">
       <div className="container mx-auto px-6 relative z-10">
@@ -462,21 +616,24 @@ const DesignSection = () => {
           <div className="grid md:grid-cols-2 gap-12 mb-20 items-end border-b border-white/20 pb-12">
             <div>
               <h2 className="text-4xl md:text-6xl font-serif mb-2 text-white">Product Design</h2>
-              <div className="text-stone-300 text-xl font-serif">{CONTENT.design.brandName}</div>
+              <div className="text-stone-300 text-xl font-serif">
+                <EditableText path={['design', 'brandName']} value={content.design.brandName} />
+              </div>
             </div>
-            <p className="font-playfair italic text-white/80 text-lg md:text-right">
-              "{CONTENT.design.concept}"
-            </p>
+            <div className="font-playfair italic text-white/80 text-lg md:text-right">
+              "<EditableText path={['design', 'concept']} value={content.design.concept} multiline as="span" />"
+            </div>
           </div>
         </FadeIn>
 
         <div className="grid md:grid-cols-3 gap-12">
-          {CONTENT.design.collections.map((item, idx) => (
+          {content.design.collections.map((item, idx) => (
             <FadeIn key={idx} delay={idx * 200}>
               <div className="group cursor-pointer">
                 <div className="relative overflow-hidden mb-8 aspect-[3/4] bg-stone-900 border border-white/10">
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all z-10"></div>
-                  <img 
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all z-10 pointer-events-none"></div>
+                  <EditableImage 
+                    path={['design', 'collections', idx, 'image']}
                     src={item.image} 
                     alt={item.title} 
                     className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
@@ -486,11 +643,11 @@ const DesignSection = () => {
                   </div>
                 </div>
                 <h4 className="text-2xl font-serif text-white mb-3 group-hover:text-stone-300 transition-colors">
-                  {item.title}
+                  <EditableText path={['design', 'collections', idx, 'title']} value={item.title} />
                 </h4>
-                <p className="text-white/60 text-sm leading-relaxed font-light">
-                  {item.desc}
-                </p>
+                <div className="text-white/60 text-sm leading-relaxed font-light">
+                  <EditableText path={['design', 'collections', idx, 'desc']} value={item.desc} multiline as="p" />
+                </div>
               </div>
             </FadeIn>
           ))}
@@ -503,7 +660,7 @@ const DesignSection = () => {
   );
 };
 
-const ResearchSection = () => {
+const ResearchSection = ({ content }: { content: typeof INITIAL_CONTENT }) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -524,20 +681,24 @@ const ResearchSection = () => {
             <div className="flex flex-col md:flex-row gap-4 mb-8 text-xs font-bold tracking-widest uppercase text-stone-500">
                <span className="text-brand-dark">PhD Research Focus</span>
                <span className="hidden md:inline text-stone-300">|</span>
-               <span>{CONTENT.research.context}</span>
+               <span>
+                  <EditableText path={['research', 'context']} value={content.research.context} />
+               </span>
             </div>
             
             <h3 className="text-3xl md:text-5xl font-serif text-stone-900 mb-4 leading-tight">
-              {CONTENT.research.title}
+              <EditableText path={['research', 'title']} value={content.research.title} />
             </h3>
             <h4 className="text-xl text-stone-600 mb-8 font-light italic">
-              {CONTENT.research.subtitle}
+              <EditableText path={['research', 'subtitle']} value={content.research.subtitle} />
             </h4>
             
             <div className="w-full h-px bg-stone-200 mb-8"></div>
 
             <div className={`prose prose-stone prose-lg max-w-none text-stone-600 transition-all duration-700 overflow-hidden ${expanded ? 'max-h-[1000px] opacity-100' : 'max-h-24 opacity-60'}`}>
-               <p className="leading-relaxed">{CONTENT.research.abstract}</p>
+               <div className="leading-relaxed">
+                  <EditableText path={['research', 'abstract']} value={content.research.abstract} multiline as="p" />
+               </div>
             </div>
 
             <div className="mt-8 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -550,9 +711,9 @@ const ResearchSection = () => {
               </button>
               
               <div className="flex flex-wrap gap-2">
-                {CONTENT.research.tags.map((tag, i) => (
+                {content.research.tags.map((tag, i) => (
                   <span key={i} className="text-[10px] uppercase tracking-wider bg-white border border-stone-200 text-stone-500 px-3 py-1">
-                    {tag}
+                    <EditableText path={['research', 'tags', i]} value={tag} />
                   </span>
                 ))}
               </div>
@@ -564,47 +725,119 @@ const ResearchSection = () => {
   );
 };
 
-const Footer = () => {
+const Footer = ({ content }: { content: typeof INITIAL_CONTENT }) => {
+  const { isEditing, updateContent } = React.useContext(EditContext);
+  // Need to lift state setter or expose a toggle from context, but simpler to just pass a prop from App.
+  // Actually, standard pattern is to use Context, but for this specific button we need to modify the `isEditing` state itself.
+  // I will cheat slightly by accessing the toggle function passed via context, but I defined context as only exposing isEditing bool.
+  // Let's rely on the parent App to pass a setter if I were refactoring fully, 
+  // but simpler: The toggle button is part of the footer, so I need to expose setEditMode to Footer or Context.
+  // See App component below.
   return (
     <footer id="contact" className="bg-[#1C1917] text-stone-400 py-20 border-t border-stone-800">
       <div className="container mx-auto px-6 text-center">
         <h2 className="text-4xl font-serif text-white mb-10 tracking-wider">ZIXIONG NIE</h2>
         
         <div className="flex flex-col md:flex-row justify-center items-center gap-10 mb-16 text-sm tracking-widest uppercase">
-          <a href={`mailto:${CONTENT.contact.email}`} className="hover:text-brand-light transition-colors flex items-center gap-2">
-            <Mail size={16} /> {CONTENT.contact.email}
+          <a href={`mailto:${content.contact.email}`} className="hover:text-brand-light transition-colors flex items-center gap-2">
+            <Mail size={16} /> 
+            <EditableText path={['contact', 'email']} value={content.contact.email} />
           </a>
           <span className="hidden md:inline text-stone-700">|</span>
-          <span>{CONTENT.contact.location}</span>
+          <span>
+            <EditableText path={['contact', 'location']} value={content.contact.location} />
+          </span>
         </div>
 
         <div className="max-w-md mx-auto h-px bg-stone-800 mb-10"></div>
 
-        <div className="text-xs text-stone-600 font-medium">
-          <p>{CONTENT.contact.copyright}</p>
+        <div className="text-xs text-stone-600 font-medium flex items-center justify-center gap-2">
+          <p>
+             <EditableText path={['contact', 'copyright']} value={content.contact.copyright} />
+          </p>
+          {/* Edit Button */}
+          <EditToggleButton />
         </div>
       </div>
     </footer>
   );
 };
 
+// Separate component to hook into context for toggling
+// Wait, context currently doesn't expose toggle. I need to update the Context definition.
+// See App component.
+
 /**
  * =================================================================================
  * MAIN APP COMPONENT
  * =================================================================================
  */
+
+const EditToggleButton = () => {
+   // This component will be provided with a special context or props
+   // To keep it clean, I'll pass the toggler via a new context property or just pass it down.
+   // Let's update the context type first.
+   const { toggleEditMode, isEditing, resetContent } = React.useContext(EditContext) as any;
+   
+   return (
+     <div className="flex gap-2 ml-2">
+        <button 
+           onClick={toggleEditMode}
+           className={`p-1 rounded-full transition-all ${isEditing ? 'bg-yellow-500 text-stone-900' : 'bg-stone-800 text-stone-600 hover:text-stone-400'}`}
+           title="Toggle Edit Mode"
+        >
+           {isEditing ? <Check size={12} /> : <Edit2 size={12} />}
+        </button>
+        {isEditing && (
+           <button 
+              onClick={resetContent}
+              className="p-1 rounded-full bg-red-900 text-red-300 hover:bg-red-800 transition-all"
+              title="Reset All Changes"
+           >
+              <RotateCcw size={12} />
+           </button>
+        )}
+     </div>
+   )
+}
+
 export default function App() {
+  const [content, setContent] = useState(INITIAL_CONTENT);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Deep update function
+  const updateContent = (path: (string | number)[], value: any) => {
+    setContent(prev => {
+      const newContent = JSON.parse(JSON.stringify(prev)); // Deep clone for safety
+      let current = newContent;
+      for (let i = 0; i < path.length - 1; i++) {
+        current = current[path[i]];
+      }
+      current[path[path.length - 1]] = value;
+      return newContent;
+    });
+  };
+
+  const toggleEditMode = () => setIsEditing(!isEditing);
+  const resetContent = () => {
+    if(window.confirm("Are you sure you want to reset all changes?")) {
+      setContent(INITIAL_CONTENT);
+    }
+  };
+
   return (
-    <div className="min-h-screen font-sans">
-      <Navigation />
-      <main>
-        <Hero />
-        <About />
-        <ArtPortfolio />
-        <DesignSection />
-        <ResearchSection />
-      </main>
-      <Footer />
-    </div>
+    <EditContext.Provider value={{ isEditing, updateContent, toggleEditMode, resetContent } as any}>
+      <div className="min-h-screen font-sans">
+        <Navigation />
+        <main>
+          <Hero content={content} />
+          <About content={content} />
+          <ArtPortfolio content={content} />
+          <DesignSection content={content} />
+          <ResearchSection content={content} />
+        </main>
+        <Footer content={content} />
+      </div>
+    </EditContext.Provider>
   );
 }
