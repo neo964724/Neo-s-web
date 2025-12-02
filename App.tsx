@@ -1,14 +1,12 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Menu, 
   X, 
   ChevronDown, 
-  ExternalLink, 
-  Mail, 
-  Award, 
   BookOpen, 
-  Briefcase 
+  Award, 
+  Briefcase, 
+  Mail 
 } from 'lucide-react';
 
 /**
@@ -152,8 +150,12 @@ const FadeIn = ({ children, delay = 0 }: { children?: React.ReactNode, delay?: n
 
   useEffect(() => {
     const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => setIsVisible(entry.isIntersecting));
-    });
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      });
+    }, { threshold: 0.1 }); // Trigger slightly earlier
     if (domRef.current) observer.observe(domRef.current);
     return () => observer.disconnect();
   }, []);
@@ -219,7 +221,7 @@ const Navigation = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg py-8 px-6 flex flex-col space-y-6">
+        <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg py-8 px-6 flex flex-col space-y-6 border-t border-stone-100">
           {links.map((link) => (
             <a 
               key={link.name} 
@@ -238,37 +240,34 @@ const Navigation = () => {
 
 const Hero = () => {
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#EFEFEF]">
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#F5F5F4]">
       
       {/* 
-        Geometric Layout based on reference image:
-        - Large burgundy triangle top left (hinted)
-        - Large burgundy triangle bottom left
-        - Image grid on right
+        Aesthetic: Diagonal Division (Deep Burgundy & Light Grey)
       */}
       
-      {/* Bottom Left Burgundy Shape */}
-      <div className="absolute bottom-0 left-0 w-[40vw] h-[40vh] bg-brand-dark transform -translate-x-1/4 translate-y-1/3 rotate-45 z-0"></div>
+      {/* Left Bottom Burgundy Triangle */}
+      <div className="absolute bottom-0 left-0 w-[50vw] h-[50vh] bg-brand-dark transform -translate-x-1/4 translate-y-1/4 rotate-45 z-0"></div>
       
-      {/* Top Right Geometric Accent (Grey) */}
-      <div className="absolute top-0 right-0 w-[60vw] h-[100vh] bg-stone-200 clip-path-polygon z-0" style={{clipPath: 'polygon(20% 0%, 100% 0%, 100% 100%, 0% 100%)'}}></div>
+      {/* Right Top Grey Block with Clip Path */}
+      <div className="absolute top-0 right-0 w-[70vw] h-[100vh] bg-[#E7E5E4] clip-path-polygon z-0"></div>
 
-      {/* Top Right Burgundy Stripe (thin) */}
-      <div className="absolute top-[20%] right-[35%] w-0.5 h-64 bg-stone-800 rotate-45 z-10"></div>
+      {/* Thin Decorative Line - Red */}
+      <div className="absolute top-[30%] right-[40%] w-0.5 h-48 bg-brand-light rotate-45 z-10 hidden md:block"></div>
       
       <div className="container mx-auto px-6 relative z-10 grid md:grid-cols-2 gap-12 items-center h-full pt-20">
         
-        {/* Left Content - Typography */}
+        {/* Left Content */}
         <div className="text-left relative">
           <FadeIn delay={200}>
-            <h1 className="text-6xl md:text-8xl font-serif text-brand-dark leading-tight italic">
+            <h1 className="text-6xl md:text-8xl font-serif text-brand-dark leading-none italic drop-shadow-sm">
               Profile of<br/>
               <span className="not-italic text-stone-900">Zixiong Nie</span>
             </h1>
           </FadeIn>
           
           <FadeIn delay={400}>
-            <div className="mt-16 max-w-lg">
+            <div className="mt-12 max-w-lg">
               <p className="font-playfair italic text-stone-600 text-lg md:text-xl border-l-2 border-brand-dark pl-6 py-2">
                 "{CONTENT.hero.tagline}"
               </p>
@@ -278,7 +277,7 @@ const Hero = () => {
           <FadeIn delay={600}>
              <div className="mt-8 flex gap-4">
                {CONTENT.hero.roles.map((role, idx) => (
-                 <span key={idx} className="text-xs font-bold tracking-widest uppercase text-stone-500 border border-stone-300 px-3 py-1 rounded-full">
+                 <span key={idx} className="text-xs font-bold tracking-widest uppercase text-brand-dark border border-brand-dark/20 bg-white/50 px-3 py-1 rounded-sm">
                    {role}
                  </span>
                ))}
@@ -286,20 +285,20 @@ const Hero = () => {
           </FadeIn>
         </div>
 
-        {/* Right Content - Diamond Image Grid (Abstract representation of the art in screenshot) */}
+        {/* Right Content - Diamond Grid */}
         <div className="relative hidden md:block h-[600px] w-full">
-            {/* Image 1 - Top */}
-            <div className="absolute top-10 right-10 w-64 h-64 overflow-hidden border-4 border-white shadow-xl rotate-45 z-20 hover:scale-105 transition-transform duration-700">
+            {/* Image 1 */}
+            <div className="absolute top-10 right-10 w-64 h-64 overflow-hidden border-4 border-white shadow-2xl rotate-45 z-20 hover:scale-105 transition-transform duration-700">
                <img src={CONTENT.artSeries[0].images[0].url} className="w-full h-full object-cover -rotate-45 scale-125" alt="Art 1" />
             </div>
             
-            {/* Image 2 - Middle */}
-            <div className="absolute top-48 right-48 w-56 h-56 overflow-hidden border-4 border-white shadow-xl rotate-45 z-10 hover:scale-105 transition-transform duration-700 grayscale hover:grayscale-0">
+            {/* Image 2 */}
+            <div className="absolute top-48 right-48 w-56 h-56 overflow-hidden border-4 border-white shadow-2xl rotate-45 z-10 hover:scale-105 transition-transform duration-700 grayscale hover:grayscale-0">
                <img src={CONTENT.artSeries[1].images[0].url} className="w-full h-full object-cover -rotate-45 scale-125" alt="Art 2" />
             </div>
 
-            {/* Image 3 - Bottom */}
-            <div className="absolute bottom-10 right-20 w-48 h-48 overflow-hidden border-4 border-white shadow-xl rotate-45 z-30 hover:scale-105 transition-transform duration-700">
+            {/* Image 3 */}
+            <div className="absolute bottom-10 right-20 w-48 h-48 overflow-hidden border-4 border-white shadow-2xl rotate-45 z-30 hover:scale-105 transition-transform duration-700">
                <img src={CONTENT.artSeries[2].images[0].url} className="w-full h-full object-cover -rotate-45 scale-125" alt="Art 3" />
             </div>
         </div>
@@ -318,14 +317,13 @@ const About = () => {
       <div className="container mx-auto px-6">
         <div className="grid md:grid-cols-12 gap-12">
           
-          {/* Left Column: Biography */}
           <div className="md:col-span-7">
             <FadeIn>
               <SectionTitle>About The Artist</SectionTitle>
               <div className="prose prose-stone prose-lg text-stone-600">
                 <p className="leading-loose mb-8 text-lg">{CONTENT.about.bio}</p>
                 
-                <div className="bg-stone-50 p-8 border-l-4 border-brand-dark my-8">
+                <div className="bg-stone-50 p-8 border-l-4 border-brand-dark my-8 shadow-sm">
                   <h3 className="font-serif text-xl text-brand-dark mb-4">Artistic Statement</h3>
                   <p className="italic font-playfair text-stone-700">
                     {CONTENT.about.statement}
@@ -335,7 +333,6 @@ const About = () => {
             </FadeIn>
           </div>
 
-          {/* Right Column: CV */}
           <div className="md:col-span-5 space-y-12">
             <FadeIn delay={200}>
               <div className="relative">
@@ -389,7 +386,7 @@ const ArtSeriesCard = ({ series, index }: { series: typeof CONTENT.artSeries[0],
       {/* Image Section */}
       <div className="w-full lg:w-3/5 relative">
         <FadeIn>
-           <div className="w-full aspect-[4/3] bg-stone-200 relative overflow-hidden shadow-2xl">
+           <div className="w-full aspect-[4/3] bg-stone-200 relative overflow-hidden shadow-2xl border-4 border-white">
              <div className="absolute inset-0 bg-brand-dark/0 group-hover:bg-brand-dark/10 transition-colors duration-500 z-10"></div>
              <img 
                src={series.images[0].url} 
@@ -400,7 +397,7 @@ const ArtSeriesCard = ({ series, index }: { series: typeof CONTENT.artSeries[0],
            
            {/* Decorative overlapping image */}
            {series.images[1] && (
-             <div className={`hidden md:block w-1/2 absolute -bottom-12 ${isEven ? '-right-12' : '-left-12'} aspect-square border-8 border-white shadow-xl z-20`}>
+             <div className={`hidden md:block w-1/2 absolute -bottom-12 ${isEven ? '-right-12' : '-left-12'} aspect-square border-8 border-stone-50 shadow-xl z-20`}>
                 <img 
                   src={series.images[1].url} 
                   alt={series.images[1].alt}
@@ -410,8 +407,8 @@ const ArtSeriesCard = ({ series, index }: { series: typeof CONTENT.artSeries[0],
            )}
            
            {/* Decorative Label */}
-           <div className={`absolute top-6 ${isEven ? 'left-6' : 'right-6'} bg-white/90 backdrop-blur px-4 py-2 z-20`}>
-             <span className="text-xs font-bold tracking-widest text-brand-dark uppercase">Series 0{index + 1}</span>
+           <div className={`absolute top-6 ${isEven ? 'left-6' : 'right-6'} bg-brand-dark text-white px-4 py-2 z-20 shadow-md`}>
+             <span className="text-xs font-bold tracking-widest uppercase">Series 0{index + 1}</span>
            </div>
         </FadeIn>
       </div>
@@ -419,16 +416,13 @@ const ArtSeriesCard = ({ series, index }: { series: typeof CONTENT.artSeries[0],
       {/* Text Section */}
       <div className="w-full lg:w-2/5">
         <FadeIn delay={200}>
-          <h3 className="text-4xl md:text-5xl font-serif text-stone-900 mb-8 leading-tight">
+          <h3 className="text-4xl md:text-5xl font-serif text-brand-dark mb-8 leading-tight">
             {series.title}
           </h3>
-          <div className="w-12 h-1 bg-brand-dark mb-8"></div>
+          <div className="w-12 h-1 bg-stone-300 mb-8"></div>
           <p className="text-stone-600 leading-relaxed mb-8 text-lg font-light">
             {series.description}
           </p>
-          <button className="text-xs font-bold uppercase tracking-widest text-stone-900 border-b border-stone-900 pb-1 hover:text-brand-dark hover:border-brand-dark transition-all">
-            View Collection
-          </button>
         </FadeIn>
       </div>
     </div>
@@ -437,7 +431,7 @@ const ArtSeriesCard = ({ series, index }: { series: typeof CONTENT.artSeries[0],
 
 const ArtPortfolio = () => {
   return (
-    <section id="art" className="py-32 bg-[#F5F5F4]">
+    <section id="art" className="py-32 bg-stone-100">
       <div className="container mx-auto px-6">
         <div className="mb-24 text-center">
           <SectionTitle>Selected Works</SectionTitle>
@@ -455,13 +449,13 @@ const ArtPortfolio = () => {
 
 const DesignSection = () => {
   return (
-    <section id="design" className="py-24 bg-brand-dark text-white overflow-hidden">
+    <section id="design" className="py-24 bg-brand-dark text-white overflow-hidden relative">
       <div className="container mx-auto px-6 relative z-10">
         <FadeIn>
           <div className="grid md:grid-cols-2 gap-12 mb-20 items-end border-b border-white/20 pb-12">
             <div>
-              <h2 className="text-4xl md:text-6xl font-serif mb-2">Product Design</h2>
-              <div className="text-brand-light text-xl font-serif">{CONTENT.design.brandName}</div>
+              <h2 className="text-4xl md:text-6xl font-serif mb-2 text-white">Product Design</h2>
+              <div className="text-stone-300 text-xl font-serif">{CONTENT.design.brandName}</div>
             </div>
             <p className="font-playfair italic text-white/80 text-lg md:text-right">
               "{CONTENT.design.concept}"
@@ -481,10 +475,10 @@ const DesignSection = () => {
                     className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
                   />
                   <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent z-20 translate-y-4 group-hover:translate-y-0 transition-transform">
-                     <span className="text-xs font-bold uppercase tracking-widest text-brand-light">Collection</span>
+                     <span className="text-xs font-bold uppercase tracking-widest text-white">Collection</span>
                   </div>
                 </div>
-                <h4 className="text-2xl font-serif text-white mb-3 group-hover:text-brand-light transition-colors">
+                <h4 className="text-2xl font-serif text-white mb-3 group-hover:text-stone-300 transition-colors">
                   {item.title}
                 </h4>
                 <p className="text-white/60 text-sm leading-relaxed font-light">
@@ -496,8 +490,8 @@ const DesignSection = () => {
         </div>
       </div>
       
-      {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-[50vw] h-full bg-black/10 skew-x-12 pointer-events-none"></div>
+      {/* Background decoration - diagonal */}
+      <div className="absolute top-0 right-0 w-[50vw] h-full bg-black/10 -skew-x-12 pointer-events-none"></div>
     </section>
   );
 };
@@ -516,7 +510,7 @@ const ResearchSection = () => {
         </FadeIn>
 
         <FadeIn delay={200}>
-          <div className="bg-stone-50 p-8 md:p-16 border border-stone-200 relative overflow-hidden shadow-lg">
+          <div className="bg-stone-50 p-8 md:p-16 border border-stone-200 relative overflow-hidden shadow-xl">
             {/* Decorative Corner */}
             <div className="absolute top-0 left-0 w-24 h-24 bg-brand-dark transform -translate-x-12 -translate-y-12 rotate-45"></div>
 
@@ -565,7 +559,7 @@ const ResearchSection = () => {
 
 const Footer = () => {
   return (
-    <footer id="contact" className="bg-[#1a1a1a] text-stone-400 py-20 border-t border-stone-800">
+    <footer id="contact" className="bg-[#1C1917] text-stone-400 py-20 border-t border-stone-800">
       <div className="container mx-auto px-6 text-center">
         <h2 className="text-4xl font-serif text-white mb-10 tracking-wider">ZIXIONG NIE</h2>
         
@@ -594,7 +588,7 @@ const Footer = () => {
  */
 export default function App() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen font-sans">
       <Navigation />
       <main>
         <Hero />
