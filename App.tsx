@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Menu, 
   X, 
@@ -7,19 +8,17 @@ import {
   Mail, 
   Award, 
   BookOpen, 
-  Palette, 
   Briefcase 
 } from 'lucide-react';
 
 /**
  * =================================================================================
  * CONTENT CONFIGURATION
- * Edit the fields below to update the website content without touching the code logic.
  * =================================================================================
  */
 const CONTENT = {
   hero: {
-    name: "Zixiong Nie (Neo)",
+    name: "Profile of Zixiong Nie",
     roles: ["Artist", "Researcher", "Educator"],
     tagline: "Emotion is deeply rooted in the pulse of the times and history will forge its eternity.",
     intro: "Exploring the tension between fragility and resilience through ceramics, painting, and cross-cultural research.",
@@ -63,8 +62,8 @@ const CONTENT = {
       title: "Born in Thorns",
       description: "This series addresses spiritual struggle and transcendence. The thorn symbolizes nature's resistance, entwining fragile porcelain like nature's struggle amid industrial onslaught. It becomes an emotionally charged contradiction: through this tension, the porcelain's life continues to unfold.",
       images: [
-        { url: "https://picsum.photos/seed/thorns1/800/600", alt: "Folding screen with thorn motifs, ceramic and metal" },
-        { url: "https://picsum.photos/seed/thorns2/800/800", alt: "Close up of thorn texture on ceramic tile" }
+        { url: "https://images.unsplash.com/photo-1614730341194-75c60740a270?q=80&w=2774&auto=format&fit=crop", alt: "Folding screen with thorn motifs, ceramic and metal" },
+        { url: "https://images.unsplash.com/photo-1629196914375-f7e48f477b6d?q=80&w=2656&auto=format&fit=crop", alt: "Close up of thorn texture on ceramic tile" }
       ]
     },
     {
@@ -72,9 +71,8 @@ const CONTENT = {
       title: "Avidya",
       description: "Reflecting on ignorance and inner struggle through recurring thorn motifs. Inspired by Francis Bacon's expressive language, these works deconstruct identity. The distorted faces and entangled lines evoke both vulnerability and resilience.",
       images: [
-        { url: "https://picsum.photos/seed/avidya1/800/1000", alt: "Distorted portrait on ceramic plate" },
-        { url: "https://picsum.photos/seed/avidya2/800/600", alt: "Mixed media painting with ceramic elements" },
-        { url: "https://picsum.photos/seed/avidya3/800/800", alt: "Abstract ceramic sculpture" }
+        { url: "https://images.unsplash.com/photo-1549887552-93f8efb0818e?q=80&w=2670&auto=format&fit=crop", alt: "Distorted portrait on ceramic plate" },
+        { url: "https://images.unsplash.com/photo-1515405295579-ba7f9f92f413?q=80&w=2670&auto=format&fit=crop", alt: "Mixed media painting with ceramic elements" },
       ]
     },
     {
@@ -82,8 +80,8 @@ const CONTENT = {
       title: "Qi · Flow",
       description: "Capturing the dynamics of life energy through the unpredictability of fire and glaze. The clouds' shifting curves—coalescing into mist, unraveling into strands—evoke the rhythm of endless return.",
       images: [
-        { url: "https://picsum.photos/seed/qi1/800/800", alt: "Circular ceramic piece with swirling blue glazes" },
-        { url: "https://picsum.photos/seed/qi2/800/600", alt: "Abstract flow patterns in porcelain" }
+        { url: "https://images.unsplash.com/photo-1578320339807-7430988a83eb?q=80&w=2574&auto=format&fit=crop", alt: "Circular ceramic piece with swirling blue glazes" },
+        { url: "https://images.unsplash.com/photo-1578320339996-5f78238714eb?q=80&w=2574&auto=format&fit=crop", alt: "Abstract flow patterns in porcelain" }
       ]
     },
     {
@@ -91,8 +89,8 @@ const CONTENT = {
       title: "Dreaming Freedom",
       description: "Zhuangzi spoke of 'roaming the mind through things.' Under extreme heat (1300°C), colored glazes vaporize into mist and surge like waves, forming dream-like creatures from flow—freedom materialized through fire, not hand.",
       images: [
-        { url: "https://picsum.photos/seed/dream1/600/900", alt: "Tall vase with blue dream-like imagery" },
-        { url: "https://picsum.photos/seed/dream2/800/800", alt: "Detail of high-fire glaze texture" }
+        { url: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=2670&auto=format&fit=crop", alt: "Tall vase with blue dream-like imagery" },
+        { url: "https://images.unsplash.com/photo-1581345837380-ef2d861d81d2?q=80&w=2670&auto=format&fit=crop", alt: "Detail of high-fire glaze texture" }
       ]
     }
   ],
@@ -103,22 +101,23 @@ const CONTENT = {
       {
         title: "Pine Series",
         desc: "Decorative sculptures and incense holders inspired by the resilience of pine trees.",
-        image: "https://picsum.photos/seed/pine/800/600"
+        image: "https://images.unsplash.com/photo-1596347069151-5b77c5f3e099?q=80&w=2574&auto=format&fit=crop"
       },
       {
         title: "Jia Series",
         desc: "Organic forms resembling seeds or pods, functioning as vessels for scent and light.",
-        image: "https://picsum.photos/seed/jia/800/600"
+        image: "https://images.unsplash.com/photo-1605304386419-48283a2183c5?q=80&w=2670&auto=format&fit=crop"
       },
       {
         title: "Collaborations",
         desc: "Partnered with TANCHUR to integrate traditional craftsmanship with contemporary luxury.",
-        image: "https://picsum.photos/seed/collab/800/600"
+        image: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?q=80&w=2670&auto=format&fit=crop"
       }
     ]
   },
   research: {
-    title: "Influence of Chinese Porcelain in Europe: Analysis of Cultural Exchange and Transformation of European Design",
+    title: "Influence of Chinese Porcelain in Europe",
+    subtitle: "Analysis of Cultural Exchange and Transformation of European Design",
     context: "17th – 19th Century | Focus on Meissen & Sèvres",
     abstract: "Between the 17th and 19th centuries, Chinese porcelain had a profound influence on European design. This research analyzes how the technical and aesthetic elements of Chinese porcelain influenced European innovation. It explores technology transfer in porcelain production, the aesthetic transformation of 'Chinoiserie', and the hybridization of styles in manufactures like Meissen and Sèvres. The study demonstrates that Chinese porcelain was not merely an exotic luxury but a catalyst for technical innovation and cross-cultural dialogue that fundamentally shaped European modern design history.",
     tags: ["Cultural Exchange", "Material Culture", "Design History", "Ceramic Technology"]
@@ -139,15 +138,17 @@ const CONTENT = {
 // --- UI Primitives ---
 
 const SectionTitle = ({ children, dark = false }: { children?: React.ReactNode, dark?: boolean }) => (
-  <h2 className={`text-3xl md:text-4xl font-serif mb-12 relative inline-block ${dark ? 'text-white' : 'text-stone-900'}`}>
-    {children}
-    <span className={`absolute -bottom-4 left-0 w-12 h-1 ${dark ? 'bg-stone-500' : 'bg-brand-dark'}`}></span>
-  </h2>
+  <div className="mb-12 relative inline-block">
+    <h2 className={`text-3xl md:text-5xl font-serif font-medium ${dark ? 'text-white' : 'text-brand-dark'}`}>
+      {children}
+    </h2>
+    <div className={`mt-4 h-1 w-20 ${dark ? 'bg-stone-500' : 'bg-brand-dark'}`}></div>
+  </div>
 );
 
-const FadeIn = ({ children, delay = 0 }: { children?: React.ReactNode, delay?: number, key?: React.Key }) => {
+const FadeIn = ({ children, delay = 0 }: { children?: React.ReactNode, delay?: number }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const domRef = React.useRef<HTMLDivElement>(null);
+  const domRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(entries => {
@@ -183,27 +184,27 @@ const Navigation = () => {
   }, []);
 
   const links = [
+    { name: 'Home', href: '#home' },
     { name: 'About', href: '#about' },
-    { name: 'Fine Art', href: '#art' },
+    { name: 'Portfolio', href: '#art' },
     { name: 'Design', href: '#design' },
     { name: 'Research', href: '#research' },
-    { name: 'Contact', href: '#contact' },
   ];
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-sm shadow-md py-4' : 'bg-transparent py-6'}`}>
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-sm shadow-md py-3' : 'bg-transparent py-6'}`}>
       <div className="container mx-auto px-6 flex justify-between items-center">
-        <a href="#" className={`font-serif text-xl tracking-widest font-bold ${scrolled ? 'text-stone-900' : 'text-stone-900'}`}>
+        <a href="#home" className={`font-serif text-xl tracking-widest font-bold ${scrolled ? 'text-brand-dark' : 'text-brand-dark'}`}>
           ZIXIONG NIE
         </a>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex space-x-8">
+        <div className="hidden md:flex space-x-10">
           {links.map((link) => (
             <a 
               key={link.name} 
               href={link.href} 
-              className={`text-sm uppercase tracking-widest hover:text-brand-dark transition-colors ${scrolled ? 'text-stone-600' : 'text-stone-800'}`}
+              className={`text-xs uppercase tracking-[0.2em] font-medium hover:text-brand-light transition-colors ${scrolled ? 'text-stone-800' : 'text-stone-900'}`}
             >
               {link.name}
             </a>
@@ -223,7 +224,7 @@ const Navigation = () => {
             <a 
               key={link.name} 
               href={link.href} 
-              className="text-lg font-serif text-stone-800"
+              className="text-lg font-serif text-stone-800 border-b border-stone-100 pb-2"
               onClick={() => setIsOpen(false)}
             >
               {link.name}
@@ -237,38 +238,75 @@ const Navigation = () => {
 
 const Hero = () => {
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden bg-stone-100">
-      {/* Abstract Background Element */}
-      <div className="absolute top-0 right-0 w-2/3 h-full bg-stone-200 opacity-20 transform skew-x-12 translate-x-1/4"></div>
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#EFEFEF]">
       
-      <div className="container mx-auto px-6 relative z-10 pt-20">
-        <div className="max-w-4xl">
-          <FadeIn>
-            <p className="text-brand-dark tracking-[0.3em] uppercase text-sm mb-4 font-bold">
-              {CONTENT.hero.roles.join("  |  ")}
-            </p>
-          </FadeIn>
+      {/* 
+        Geometric Layout based on reference image:
+        - Large burgundy triangle top left (hinted)
+        - Large burgundy triangle bottom left
+        - Image grid on right
+      */}
+      
+      {/* Bottom Left Burgundy Shape */}
+      <div className="absolute bottom-0 left-0 w-[40vw] h-[40vh] bg-brand-dark transform -translate-x-1/4 translate-y-1/3 rotate-45 z-0"></div>
+      
+      {/* Top Right Geometric Accent (Grey) */}
+      <div className="absolute top-0 right-0 w-[60vw] h-[100vh] bg-stone-200 clip-path-polygon z-0" style={{clipPath: 'polygon(20% 0%, 100% 0%, 100% 100%, 0% 100%)'}}></div>
+
+      {/* Top Right Burgundy Stripe (thin) */}
+      <div className="absolute top-[20%] right-[35%] w-0.5 h-64 bg-stone-800 rotate-45 z-10"></div>
+      
+      <div className="container mx-auto px-6 relative z-10 grid md:grid-cols-2 gap-12 items-center h-full pt-20">
+        
+        {/* Left Content - Typography */}
+        <div className="text-left relative">
           <FadeIn delay={200}>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-stone-900 leading-tight mb-8">
-              {CONTENT.hero.name}
+            <h1 className="text-6xl md:text-8xl font-serif text-brand-dark leading-tight italic">
+              Profile of<br/>
+              <span className="not-italic text-stone-900">Zixiong Nie</span>
             </h1>
           </FadeIn>
+          
           <FadeIn delay={400}>
-            <p className="text-xl md:text-2xl text-stone-600 font-light italic border-l-4 border-brand-dark pl-6 mb-8">
-              "{CONTENT.hero.tagline}"
-            </p>
+            <div className="mt-16 max-w-lg">
+              <p className="font-playfair italic text-stone-600 text-lg md:text-xl border-l-2 border-brand-dark pl-6 py-2">
+                "{CONTENT.hero.tagline}"
+              </p>
+            </div>
           </FadeIn>
+
           <FadeIn delay={600}>
-            <p className="text-stone-500 max-w-xl mb-10">
-              {CONTENT.hero.intro}
-            </p>
-          </FadeIn>
-          <FadeIn delay={800}>
-            <a href="#art" className="group inline-flex items-center text-stone-900 border-b border-stone-900 pb-1 hover:text-brand-dark hover:border-brand-dark transition-colors">
-              View Portfolio <ChevronDown className="ml-2 w-4 h-4 group-hover:translate-y-1 transition-transform" />
-            </a>
+             <div className="mt-8 flex gap-4">
+               {CONTENT.hero.roles.map((role, idx) => (
+                 <span key={idx} className="text-xs font-bold tracking-widest uppercase text-stone-500 border border-stone-300 px-3 py-1 rounded-full">
+                   {role}
+                 </span>
+               ))}
+             </div>
           </FadeIn>
         </div>
+
+        {/* Right Content - Diamond Image Grid (Abstract representation of the art in screenshot) */}
+        <div className="relative hidden md:block h-[600px] w-full">
+            {/* Image 1 - Top */}
+            <div className="absolute top-10 right-10 w-64 h-64 overflow-hidden border-4 border-white shadow-xl rotate-45 z-20 hover:scale-105 transition-transform duration-700">
+               <img src={CONTENT.artSeries[0].images[0].url} className="w-full h-full object-cover -rotate-45 scale-125" alt="Art 1" />
+            </div>
+            
+            {/* Image 2 - Middle */}
+            <div className="absolute top-48 right-48 w-56 h-56 overflow-hidden border-4 border-white shadow-xl rotate-45 z-10 hover:scale-105 transition-transform duration-700 grayscale hover:grayscale-0">
+               <img src={CONTENT.artSeries[1].images[0].url} className="w-full h-full object-cover -rotate-45 scale-125" alt="Art 2" />
+            </div>
+
+            {/* Image 3 - Bottom */}
+            <div className="absolute bottom-10 right-20 w-48 h-48 overflow-hidden border-4 border-white shadow-xl rotate-45 z-30 hover:scale-105 transition-transform duration-700">
+               <img src={CONTENT.artSeries[2].images[0].url} className="w-full h-full object-cover -rotate-45 scale-125" alt="Art 3" />
+            </div>
+        </div>
+      </div>
+      
+      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-stone-400">
+        <ChevronDown size={32} />
       </div>
     </section>
   );
@@ -276,62 +314,65 @@ const Hero = () => {
 
 const About = () => {
   return (
-    <section id="about" className="py-24 bg-white">
+    <section id="about" className="py-24 bg-white relative">
       <div className="container mx-auto px-6">
-        <div className="grid md:grid-cols-2 gap-16 items-start">
+        <div className="grid md:grid-cols-12 gap-12">
           
-          <FadeIn>
-            <SectionTitle>About The Artist</SectionTitle>
-            <div className="prose prose-stone prose-lg text-stone-600 mb-8">
-              <p className="mb-6">{CONTENT.about.bio}</p>
-              <h3 className="text-xl font-serif text-stone-800 mb-3 mt-8">Artistic Research Statement</h3>
-              <p className="italic text-stone-500 border-l-2 border-brand-light pl-4">
-                {CONTENT.about.statement}
-              </p>
-            </div>
-            
-            <div className="mt-8 flex gap-4">
-               <button className="flex items-center gap-2 px-6 py-3 bg-stone-900 text-white hover:bg-brand-dark transition-colors text-sm tracking-widest uppercase">
-                  <Mail size={16} /> Contact Me
-               </button>
-            </div>
-          </FadeIn>
+          {/* Left Column: Biography */}
+          <div className="md:col-span-7">
+            <FadeIn>
+              <SectionTitle>About The Artist</SectionTitle>
+              <div className="prose prose-stone prose-lg text-stone-600">
+                <p className="leading-loose mb-8 text-lg">{CONTENT.about.bio}</p>
+                
+                <div className="bg-stone-50 p-8 border-l-4 border-brand-dark my-8">
+                  <h3 className="font-serif text-xl text-brand-dark mb-4">Artistic Statement</h3>
+                  <p className="italic font-playfair text-stone-700">
+                    {CONTENT.about.statement}
+                  </p>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
 
-          <FadeIn delay={300}>
-            <div className="bg-stone-50 p-8 md:p-12 border border-stone-100">
-              <div className="mb-10">
-                <h3 className="flex items-center gap-3 text-lg font-bold tracking-widest uppercase text-stone-900 mb-6">
-                  <Award className="text-brand-dark" size={20} /> Education
+          {/* Right Column: CV */}
+          <div className="md:col-span-5 space-y-12">
+            <FadeIn delay={200}>
+              <div className="relative">
+                <h3 className="flex items-center gap-3 text-sm font-bold tracking-[0.2em] uppercase text-stone-400 mb-8">
+                  <Award className="text-brand-dark" size={18} /> Education
                 </h3>
-                <ul className="space-y-6">
+                <div className="space-y-8 border-l border-stone-200 ml-2 pl-8 py-2">
                   {CONTENT.about.education.map((edu, idx) => (
-                    <li key={idx} className="relative pl-6 border-l border-stone-300">
-                      <span className="absolute -left-[5px] top-2 w-2.5 h-2.5 rounded-full bg-stone-400"></span>
-                      <span className="block text-sm text-brand-dark font-bold mb-1">{edu.year}</span>
-                      <span className="block text-lg font-serif text-stone-900">{edu.degree}</span>
-                      <span className="text-stone-500">{edu.institution}</span>
-                    </li>
+                    <div key={idx} className="relative">
+                      <span className="absolute -left-[37px] top-1.5 w-3 h-3 rounded-full border-2 border-brand-dark bg-white"></span>
+                      <span className="block text-brand-dark font-bold text-sm mb-1">{edu.year}</span>
+                      <h4 className="text-lg font-serif text-stone-900 leading-tight">{edu.degree}</h4>
+                      <span className="text-stone-500 text-sm">{edu.institution}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
+            </FadeIn>
 
-              <div>
-                <h3 className="flex items-center gap-3 text-lg font-bold tracking-widest uppercase text-stone-900 mb-6">
-                  <Briefcase className="text-brand-dark" size={20} /> Experience
+            <FadeIn delay={400}>
+              <div className="relative">
+                <h3 className="flex items-center gap-3 text-sm font-bold tracking-[0.2em] uppercase text-stone-400 mb-8">
+                  <Briefcase className="text-brand-dark" size={18} /> Experience
                 </h3>
-                <ul className="space-y-6">
+                <div className="space-y-8 border-l border-stone-200 ml-2 pl-8 py-2">
                   {CONTENT.about.experience.map((exp, idx) => (
-                    <li key={idx} className="relative pl-6 border-l border-stone-300">
-                      <span className="absolute -left-[5px] top-2 w-2.5 h-2.5 rounded-full bg-stone-400"></span>
-                      <span className="block text-sm text-brand-dark font-bold mb-1">{exp.year}</span>
-                      <span className="block text-lg font-serif text-stone-900">{exp.role}</span>
-                      <span className="text-stone-500">{exp.place}</span>
-                    </li>
+                    <div key={idx} className="relative">
+                      <span className="absolute -left-[37px] top-1.5 w-3 h-3 rounded-full border-2 border-brand-dark bg-white"></span>
+                      <span className="block text-brand-dark font-bold text-sm mb-1">{exp.year}</span>
+                      <h4 className="text-lg font-serif text-stone-900 leading-tight">{exp.role}</h4>
+                      <span className="text-stone-500 text-sm">{exp.place}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
-            </div>
-          </FadeIn>
+            </FadeIn>
+          </div>
 
         </div>
       </div>
@@ -339,25 +380,27 @@ const About = () => {
   );
 };
 
-const ArtSeriesCard = ({ series, index }: { series: typeof CONTENT.artSeries[0], index: number, key?: React.Key }) => {
+const ArtSeriesCard = ({ series, index }: { series: typeof CONTENT.artSeries[0], index: number }) => {
   const isEven = index % 2 === 0;
   
   return (
-    <div className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} gap-8 md:gap-16 items-center mb-32 last:mb-0`}>
-      <div className="w-full md:w-1/2 space-y-4">
+    <div className={`flex flex-col ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'} gap-12 lg:gap-24 items-center mb-40 last:mb-0 group`}>
+      
+      {/* Image Section */}
+      <div className="w-full lg:w-3/5 relative">
         <FadeIn>
-           <div className="w-full aspect-[4/3] overflow-hidden bg-stone-200 group relative">
+           <div className="w-full aspect-[4/3] bg-stone-200 relative overflow-hidden shadow-2xl">
+             <div className="absolute inset-0 bg-brand-dark/0 group-hover:bg-brand-dark/10 transition-colors duration-500 z-10"></div>
              <img 
                src={series.images[0].url} 
                alt={series.images[0].alt}
-               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+               className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
              />
-             <div className="absolute bottom-4 right-4 bg-white/90 px-3 py-1 text-xs uppercase tracking-widest">
-                Fig. 1
-             </div>
            </div>
+           
+           {/* Decorative overlapping image */}
            {series.images[1] && (
-             <div className="w-2/3 ml-auto -mt-12 md:-mt-20 relative z-10 border-8 border-stone-50 shadow-xl aspect-square overflow-hidden bg-stone-200">
+             <div className={`hidden md:block w-1/2 absolute -bottom-12 ${isEven ? '-right-12' : '-left-12'} aspect-square border-8 border-white shadow-xl z-20`}>
                 <img 
                   src={series.images[1].url} 
                   alt={series.images[1].alt}
@@ -365,26 +408,27 @@ const ArtSeriesCard = ({ series, index }: { series: typeof CONTENT.artSeries[0],
                 />
              </div>
            )}
+           
+           {/* Decorative Label */}
+           <div className={`absolute top-6 ${isEven ? 'left-6' : 'right-6'} bg-white/90 backdrop-blur px-4 py-2 z-20`}>
+             <span className="text-xs font-bold tracking-widest text-brand-dark uppercase">Series 0{index + 1}</span>
+           </div>
         </FadeIn>
       </div>
 
-      <div className="w-full md:w-1/2">
+      {/* Text Section */}
+      <div className="w-full lg:w-2/5">
         <FadeIn delay={200}>
-          <div className="flex items-center gap-4 mb-4">
-            <span className="text-6xl text-stone-200 font-serif font-bold">0{index + 1}</span>
-            <div className="h-px bg-stone-300 flex-grow"></div>
-          </div>
-          <h3 className="text-3xl font-serif text-stone-900 mb-6">{series.title}</h3>
-          <p className="text-stone-600 leading-relaxed mb-6 text-lg">
+          <h3 className="text-4xl md:text-5xl font-serif text-stone-900 mb-8 leading-tight">
+            {series.title}
+          </h3>
+          <div className="w-12 h-1 bg-brand-dark mb-8"></div>
+          <p className="text-stone-600 leading-relaxed mb-8 text-lg font-light">
             {series.description}
           </p>
-          <div className="flex flex-wrap gap-2">
-            {series.images.map((_, i) => (
-              <span key={i} className="text-xs font-bold text-stone-400 uppercase tracking-widest border border-stone-200 px-2 py-1">
-                View {i + 1}
-              </span>
-            ))}
-          </div>
+          <button className="text-xs font-bold uppercase tracking-widest text-stone-900 border-b border-stone-900 pb-1 hover:text-brand-dark hover:border-brand-dark transition-all">
+            View Collection
+          </button>
         </FadeIn>
       </div>
     </div>
@@ -393,18 +437,13 @@ const ArtSeriesCard = ({ series, index }: { series: typeof CONTENT.artSeries[0],
 
 const ArtPortfolio = () => {
   return (
-    <section id="art" className="py-24 bg-stone-50">
+    <section id="art" className="py-32 bg-[#F5F5F4]">
       <div className="container mx-auto px-6">
-        <FadeIn>
-          <div className="text-center mb-20">
-            <SectionTitle>Fine Art Portfolio</SectionTitle>
-            <p className="text-stone-500 max-w-2xl mx-auto mt-4">
-              A curated selection of series works exploring materiality, philosophy, and form.
-            </p>
-          </div>
-        </FadeIn>
+        <div className="mb-24 text-center">
+          <SectionTitle>Selected Works</SectionTitle>
+        </div>
 
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {CONTENT.artSeries.map((series, index) => (
             <ArtSeriesCard key={series.id} series={series} index={index} />
           ))}
@@ -416,35 +455,39 @@ const ArtPortfolio = () => {
 
 const DesignSection = () => {
   return (
-    <section id="design" className="py-24 bg-stone-900 text-stone-100">
-      <div className="container mx-auto px-6">
+    <section id="design" className="py-24 bg-brand-dark text-white overflow-hidden">
+      <div className="container mx-auto px-6 relative z-10">
         <FadeIn>
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-stone-700 pb-8">
+          <div className="grid md:grid-cols-2 gap-12 mb-20 items-end border-b border-white/20 pb-12">
             <div>
-              <SectionTitle dark>Product Design</SectionTitle>
-              <h3 className="text-2xl font-serif text-stone-300 mt-4">{CONTENT.design.brandName}</h3>
+              <h2 className="text-4xl md:text-6xl font-serif mb-2">Product Design</h2>
+              <div className="text-brand-light text-xl font-serif">{CONTENT.design.brandName}</div>
             </div>
-            <p className="md:w-1/3 text-stone-400 mt-6 md:mt-0 text-right italic">
+            <p className="font-playfair italic text-white/80 text-lg md:text-right">
               "{CONTENT.design.concept}"
             </p>
           </div>
         </FadeIn>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-12">
           {CONTENT.design.collections.map((item, idx) => (
             <FadeIn key={idx} delay={idx * 200}>
               <div className="group cursor-pointer">
-                <div className="overflow-hidden mb-6 aspect-[3/4] bg-stone-800">
+                <div className="relative overflow-hidden mb-8 aspect-[3/4] bg-stone-900 border border-white/10">
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all z-10"></div>
                   <img 
                     src={item.image} 
                     alt={item.title} 
-                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
                   />
+                  <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent z-20 translate-y-4 group-hover:translate-y-0 transition-transform">
+                     <span className="text-xs font-bold uppercase tracking-widest text-brand-light">Collection</span>
+                  </div>
                 </div>
-                <h4 className="text-xl font-serif text-white mb-2 group-hover:text-brand-light transition-colors">
+                <h4 className="text-2xl font-serif text-white mb-3 group-hover:text-brand-light transition-colors">
                   {item.title}
                 </h4>
-                <p className="text-stone-400 text-sm leading-relaxed">
+                <p className="text-white/60 text-sm leading-relaxed font-light">
                   {item.desc}
                 </p>
               </div>
@@ -452,6 +495,9 @@ const DesignSection = () => {
           ))}
         </div>
       </div>
+      
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-[50vw] h-full bg-black/10 skew-x-12 pointer-events-none"></div>
     </section>
   );
 };
@@ -461,45 +507,51 @@ const ResearchSection = () => {
 
   return (
     <section id="research" className="py-24 bg-white">
-      <div className="container mx-auto px-6 max-w-4xl">
+      <div className="container mx-auto px-6 max-w-5xl">
         <FadeIn>
-          <div className="text-center mb-12">
-            <BookOpen className="w-12 h-12 text-brand-dark mx-auto mb-6" />
+          <div className="text-center mb-16">
+            <BookOpen className="w-10 h-10 text-brand-dark mx-auto mb-6" />
             <SectionTitle>Academic Research</SectionTitle>
           </div>
         </FadeIn>
 
         <FadeIn delay={200}>
-          <div className="bg-stone-50 p-8 md:p-12 border-t-4 border-brand-dark shadow-sm">
-            <span className="inline-block bg-brand-dark text-white text-xs font-bold px-3 py-1 mb-6 uppercase tracking-widest">
-              PhD Research
-            </span>
-            <h3 className="text-2xl md:text-3xl font-serif text-stone-900 mb-4 leading-snug">
+          <div className="bg-stone-50 p-8 md:p-16 border border-stone-200 relative overflow-hidden shadow-lg">
+            {/* Decorative Corner */}
+            <div className="absolute top-0 left-0 w-24 h-24 bg-brand-dark transform -translate-x-12 -translate-y-12 rotate-45"></div>
+
+            <div className="flex flex-col md:flex-row gap-4 mb-8 text-xs font-bold tracking-widest uppercase text-stone-500">
+               <span className="text-brand-dark">PhD Research Focus</span>
+               <span className="hidden md:inline text-stone-300">|</span>
+               <span>{CONTENT.research.context}</span>
+            </div>
+            
+            <h3 className="text-3xl md:text-5xl font-serif text-stone-900 mb-4 leading-tight">
               {CONTENT.research.title}
             </h3>
-            <p className="text-stone-500 font-medium mb-6 uppercase tracking-wider text-sm">
-              {CONTENT.research.context}
-            </p>
+            <h4 className="text-xl text-stone-600 mb-8 font-light italic">
+              {CONTENT.research.subtitle}
+            </h4>
             
-            <div className={`prose prose-stone prose-lg max-w-none text-stone-600 transition-all duration-500 overflow-hidden ${expanded ? 'max-h-[1000px]' : 'max-h-40 relative'}`}>
-               <p>{CONTENT.research.abstract}</p>
-               {!expanded && (
-                 <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-stone-50 to-transparent"></div>
-               )}
+            <div className="w-full h-px bg-stone-200 mb-8"></div>
+
+            <div className={`prose prose-stone prose-lg max-w-none text-stone-600 transition-all duration-700 overflow-hidden ${expanded ? 'max-h-[1000px] opacity-100' : 'max-h-24 opacity-60'}`}>
+               <p className="leading-relaxed">{CONTENT.research.abstract}</p>
             </div>
 
             <div className="mt-8 flex flex-col md:flex-row justify-between items-center gap-6">
               <button 
                 onClick={() => setExpanded(!expanded)}
-                className="text-brand-dark font-bold uppercase tracking-widest text-sm hover:underline"
+                className="group flex items-center gap-2 text-brand-dark font-bold uppercase tracking-widest text-xs hover:bg-brand-dark hover:text-white px-6 py-3 border border-brand-dark transition-all"
               >
-                {expanded ? 'Read Less' : 'Read Abstract'}
+                {expanded ? 'Read Less' : 'Read Abstract'} 
+                <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
               </button>
               
               <div className="flex flex-wrap gap-2">
                 {CONTENT.research.tags.map((tag, i) => (
-                  <span key={i} className="text-xs bg-stone-200 text-stone-600 px-2 py-1 rounded">
-                    #{tag}
+                  <span key={i} className="text-[10px] uppercase tracking-wider bg-white border border-stone-200 text-stone-500 px-3 py-1">
+                    {tag}
                   </span>
                 ))}
               </div>
@@ -513,29 +565,21 @@ const ResearchSection = () => {
 
 const Footer = () => {
   return (
-    <footer id="contact" className="bg-stone-900 text-stone-400 py-16">
+    <footer id="contact" className="bg-[#1a1a1a] text-stone-400 py-20 border-t border-stone-800">
       <div className="container mx-auto px-6 text-center">
-        <h2 className="text-3xl font-serif text-white mb-8">ZIXIONG NIE</h2>
+        <h2 className="text-4xl font-serif text-white mb-10 tracking-wider">ZIXIONG NIE</h2>
         
-        <div className="flex flex-col md:flex-row justify-center items-center gap-8 mb-12">
-          <div className="flex items-center gap-2 hover:text-white transition-colors">
-            <Mail size={18} />
-            <a href={`mailto:${CONTENT.contact.email}`}>{CONTENT.contact.email}</a>
-          </div>
-          <div className="hidden md:block w-1 h-1 bg-stone-600 rounded-full"></div>
-          <div>{CONTENT.contact.location}</div>
+        <div className="flex flex-col md:flex-row justify-center items-center gap-10 mb-16 text-sm tracking-widest uppercase">
+          <a href={`mailto:${CONTENT.contact.email}`} className="hover:text-brand-light transition-colors flex items-center gap-2">
+            <Mail size={16} /> {CONTENT.contact.email}
+          </a>
+          <span className="hidden md:inline text-stone-700">|</span>
+          <span>{CONTENT.contact.location}</span>
         </div>
 
-        <div className="flex justify-center gap-6 mb-12">
-          <a href="#" className="p-3 bg-stone-800 rounded-full hover:bg-brand-dark hover:text-white transition-all">
-            <Palette size={20} />
-          </a>
-          <a href="#" className="p-3 bg-stone-800 rounded-full hover:bg-brand-dark hover:text-white transition-all">
-            <ExternalLink size={20} />
-          </a>
-        </div>
+        <div className="max-w-md mx-auto h-px bg-stone-800 mb-10"></div>
 
-        <div className="border-t border-stone-800 pt-8 text-sm">
+        <div className="text-xs text-stone-600 font-medium">
           <p>{CONTENT.contact.copyright}</p>
         </div>
       </div>
