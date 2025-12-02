@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, ChangeEvent, useCallback } from 'react';
 import { 
   Menu, 
@@ -604,7 +603,7 @@ const SectionTitle = ({ children, dark = false }: { children?: React.ReactNode, 
   </div>
 );
 
-const FadeIn = ({ children, delay = 0 }: { children?: React.ReactNode, delay?: number }) => {
+const FadeIn: React.FC<{ children?: React.ReactNode, delay?: number }> = ({ children, delay = 0 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const domRef = useRef<HTMLDivElement>(null);
 
@@ -871,7 +870,7 @@ const About = () => {
   );
 };
 
-const ArtSeriesCard = ({ series, index }: { series: any, index: number }) => {
+const ArtSeriesCard: React.FC<{ series: any, index: number }> = ({ series, index }) => {
   const { openLightbox } = React.useContext(AppContext);
   const isEven = index % 2 === 0;
 
