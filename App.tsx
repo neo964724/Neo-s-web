@@ -11,8 +11,14 @@ import {
 
 /**
  * =================================================================================
- * CONTENT CONFIGURATION
+ * CONTENT CONFIGURATION - EDIT THIS SECTION TO UPDATE YOUR WEBSITE
  * =================================================================================
+ * 
+ * Instructions:
+ * 1. Text: Replace the text inside the quotes "".
+ * 2. Images: Replace the 'url' with links to your own images.
+ * 3. Arrays: To add more items (like education or art series), copy an object {} 
+ *    inside the square brackets [] and paste it.
  */
 const CONTENT = {
   hero: {
@@ -60,6 +66,7 @@ const CONTENT = {
       title: "Born in Thorns",
       description: "This series addresses spiritual struggle and transcendence. The thorn symbolizes nature's resistance, entwining fragile porcelain like nature's struggle amid industrial onslaught. It becomes an emotionally charged contradiction: through this tension, the porcelain's life continues to unfold.",
       images: [
+        // TODO: Replace these Unsplash URLs with your own image links
         { url: "https://images.unsplash.com/photo-1614730341194-75c60740a270?q=80&w=2774&auto=format&fit=crop", alt: "Folding screen with thorn motifs, ceramic and metal" },
         { url: "https://images.unsplash.com/photo-1629196914375-f7e48f477b6d?q=80&w=2656&auto=format&fit=crop", alt: "Close up of thorn texture on ceramic tile" }
       ]
